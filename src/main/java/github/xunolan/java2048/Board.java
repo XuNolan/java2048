@@ -57,14 +57,23 @@ public class Board {
         }
         return stringBuilder.toString();
     }
-     private List<Element> getColumn(int index){
+
+
+
+     private List<Element> getColumn(int index, Direction direction){
         List<Element> temp = new ArrayList<>();
-        for(int i=0;i<size;i++){
-            temp.add(elementMap.get(i).get(index));
+        if(direction.equals(Direction.up)){
+            for(int i=0;i<size;i++){
+                temp.add(elementMap.get(i).get(index));
+            }
+        } else if(direction.equals(Direction.down)){//反向
+            for(int i=size-1;i>=0;i--){
+                temp.add(elementMap.get(i).get(index));
+            }
         }
         return temp;
      }
-     private List<Element> move(List<Element> elements){//全部前移，但不进行合并。
+     private List<Element> move(List<Element> elements){//全部前移，但不进行合并。与方向无关。
         int originSize = elements.size();
         //删除所有为0的元素，并在最后append新元素？
          List<Element> newElementList = elements.stream().filter(element -> element.number>0 ).collect(Collectors.toList());
@@ -73,18 +82,24 @@ public class Board {
          }
          return newElementList;
      }
-     private void putBackColumn(List<Element> elementList, int index){
-         for(int i=0;i<size;i++){
-            elementMap.get(i).set(index,elementList.get(i));
-         }
+     private void putBackColumn(List<Element> elementList, int index, Direction direction){
+        if(direction.equals(Direction.up)){
+            for(int i=0;i<size;i++){
+                elementMap.get(i).set(index,elementList.get(i));
+            }
+        }else if(direction.equals(Direction.down)){
+            for(int i=size-1;i>=0;i--){
+                elementMap.get(i).set(index,elementList.get(size-1-i));
+            }
+        }
      }
 
-    public void up(){
+    public void upOrDown(Direction direction){
         //从第二行开始，往前看有没有和自己一样的元素。
         //若前面为空，挪动到此列之前；
         //若前面有值且与自己相同，且之前未合并过（引入flag值）。合并。逻辑为将当前处理的元素值乘二，更新flag值；将被合并的元素删除；
         for(int columnIndex = 0; columnIndex < size; columnIndex++){
-            List<Element> arrayList = getColumn(columnIndex);
+            List<Element> arrayList = getColumn(columnIndex, direction);
             arrayList = move(arrayList);
             for(int i=1;i<size;i++){
                 Element epre = arrayList.get(i-1);
@@ -97,7 +112,7 @@ public class Board {
                 }
             }
             arrayList = move(arrayList);
-            putBackColumn(arrayList,columnIndex);
+            putBackColumn(arrayList,columnIndex, direction);
         }
         randomInit(2, 2);
     }
